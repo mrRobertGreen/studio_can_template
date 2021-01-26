@@ -16,7 +16,7 @@ let rename = require("gulp-rename"); // плагин переименовани�
 let fileinclude = require("gulp-file-include"); // плагин для импорта кода в html (конструкции типа @@include('file.html'))
 let clean_css = require("gulp-clean-css"); // плагин для минификации css файла
 let newer = require('gulp-newer'); // плагин для запуска задач только для тех файлов, которые изменились
-let webp = require('imagemin-webp'); // плагин для конвертации картинок в webp формат
+let webp = require('imagemin-webp'); // плагин для конфертации картинок в webp формат
 let webphtml = require('gulp-webp-html'); // плагин для интеграции webp в html
 let version = require('gulp-version-number'); // плагин для добавления номера версии к файлам css/js
 let fonter = require('gulp-fonter'); // плагин для конвертации шрифтов
@@ -137,7 +137,7 @@ function js() {
 		}))
 		.pipe(fileinclude())
 		.pipe(dest(path.build.js)) // сохраняем НЕ минифицированную версию js
-		.pipe(uglify(/* options */)) // минификация js файла
+		.pipe(uglify( /* options */ )) // минификация js файла
 		.pipe(
 			rename({
 				suffix: ".min", // переименовываем, добавляя к имени .min
@@ -220,30 +220,37 @@ function fonts() { // функция для конвертирования ttf �
 		.pipe(browsersync.stream());
 }
 
-function fontstyle() { // функция для добавления импортов шрифтов в файл fonts.scss
-	/* после выполнения функции стоит зайти в файл /scss/fonts.scss и при надобности изменить
+async function add_fonts_to_scss() { // функция для добавления импортов шрифтов в файл _fonts.scss
+	/* после выполнения функции стоит зайти в файл /scss/_fonts.scss и при надобности изменить
 	   у импортированных шрифтов значения font-weight и font-style
 	   */
-	let file_content = fs.readFileSync(src_folder + '/scss/fonts.scss');
-	if (file_content == '') {
-		fs.writeFile(src_folder + '/scss/fonts.scss', '', cb);
-		return fs.readdir(path.build.fonts, function (err, items) {
-			if (items) {
-				let c_fontname;
-				for (var i = 0; i < items.length; i++) {
-					let fontname = items[i].split('.');
-					fontname = fontname[0];
-					if (c_fontname != fontname) {
-						fs.appendFile(src_folder + '/scss/fonts.scss', '@include font("' + fontname + '", "' + fontname + '", "400", "normal");\r\n', cb);
-					}
-					c_fontname = fontname;
-				}
+	fs.writeFile(src_folder + '/scss/_fonts.scss', '', emptyCallback);
+	fs.readdir(path.build.fonts, async function (err, files) {
+		if (!files) return
+		files = removeExtensionsFromFiles(files)
+		files = removeDuplicatesFromArr(files)
+		if (err) {
+			console.error(err)
+		} else {
+			await fs.appendFile(src_folder + '/scss/_fonts.scss', '@import "_vars.scss";\r\n', emptyCallback)
+
+			for (const font of files) {
+				
+				await fs.appendFile(src_folder + '/scss/_fonts.scss', '@include font("' + font + '", "' + font + '", "400", "normal");\r\n', emptyCallback);
 			}
-		})
-	}
+		}
+	})
 }
 
-function cb() {}
+function removeExtensionsFromFiles(files) {
+	return files.map(file => file.split(".")[0])
+}
+
+function removeDuplicatesFromArr(arr) {
+	return [...new Set(arr)]
+}
+
+function emptyCallback() {}
 
 function clean() { // очистка папки с билдом, нужна после каждого изменения для удаления лишнего и неактуального
 	return del(path.clean);
@@ -258,7 +265,7 @@ function watchFiles() { // наблюдение за измениями в ук�
 }
 
 // private tasks
-let build = gulp.series(clean, fonts_otf, gulp.parallel(html, css, js, images, php, favicon), fonts, gulp.parallel(fontstyle));
+let build = gulp.series(clean, fonts_otf, gulp.parallel(html, css, js, images, php, favicon), fonts);
 let watch = gulp.parallel(build, watchFiles, browserSync); // комбинируем задания, которые нужно выполнять параллельно
 
 // чтобы зарегестрировать задания, их нужно экспортировать
@@ -268,7 +275,7 @@ exports.js = js;
 exports.php = php;
 exports.favicon = favicon;
 exports.fonts_otf = fonts_otf;
-exports.fontstyle = fontstyle;
+exports.add_fonts_to_scss = add_fonts_to_scss;
 exports.fonts = fonts;
 exports.images = images;
 exports.clean = clean;
