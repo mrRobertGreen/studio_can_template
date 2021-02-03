@@ -6,7 +6,7 @@ Something like magic for fast building simple landing pages.
 ## **Hmm... But what it includes?**
 1. Gulp set up (gulpfile.js)
 2. Basic set of folders
-3. Piece of our love :yellow_heart:
+3. Piece of our heart :yellow_heart:
 
 ## **Get started**
 1. Use `npm i` for installing necessary dev dependencies
