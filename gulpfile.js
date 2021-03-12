@@ -15,15 +15,15 @@ let uglify = require("gulp-uglify-es").default; // плагин для мини�
 let rename = require("gulp-rename"); // плагин переименования файлов
 let fileinclude = require("gulp-file-include"); // плагин для импорта кода в html (конструкции типа @@include('file.html'))
 let clean_css = require("gulp-clean-css"); // плагин для минификации css файла
+let shorthand = require("gulp-shorthand"); // плагин для упрощения стилей css
 let newer = require('gulp-newer'); // плагин для запуска задач только для тех файлов, которые изменились
 let webp = require('imagemin-webp'); // плагин для конфертации картинок в webp формат
 let webphtml = require('gulp-webp-html'); // плагин для интеграции webp в html
 let version = require('gulp-version-number'); // плагин для добавления номера версии к файлам css/js
 let fonter = require('gulp-fonter'); // плагин для конвертации шрифтов
-
+let pug2html = require('gulp-pug'); // плагин для компиляции pug
 let ttf2woff = require('gulp-ttf2woff'); // плагин для конвертации ttf шрифтов в woff
 let ttf2woff2 = require('gulp-ttf2woff2'); // плагин для конвертации ttf шрифтов в woff2
-
 let project_name = "build"; // папка с конечными файлами проекта (build)
 let src_folder = "src"; // папка с исходниками
 
@@ -41,6 +41,7 @@ let path = {
 	src: { // пути к исходным файлам	
 		favicon: src_folder + "/favicons/**",
 		html: [src_folder + "/*.html", "!" + src_folder + "/_*.html"],
+		pug: [src_folder + "/*.pug", "!" + src_folder + "/_*.pug"],
 		js: [src_folder + "/js/index.js", src_folder + "/js/libs.js"],
 		php: [src_folder + "/php/**"],
 		css: [src_folder + "/scss/*.scss", "!" + src_folder + "/_*.scss"],
@@ -66,6 +67,13 @@ function browserSync(done) {
 		notify: false, // отключаем уведомления
 		port: 5500, // указываем прт
 	});
+}
+
+function pug() {
+	return src(path.src.pug, {})
+		.pipe(pug2html()) // компиляциия из .pug в .html
+		.pipe(dest(path.build.html)) // dest - функция кладет обработанные в потоке файлы в path.build.html
+		.pipe(browsersync.stream()); // синхронизация с браузером
 }
 
 function html() { // функция обработки html
@@ -117,6 +125,7 @@ function css() { // функция обработки файлов со стил
 			})
 		)
 		.pipe(dest(path.build.css)) // кладем в path.build.css НЕ минифицированную версию css
+		.pipe(shorthand()) // упрощение стилей css
 		.pipe(clean_css()) // минифицкация css файла
 		.pipe(
 			rename({
@@ -265,11 +274,12 @@ function watchFiles() { // наблюдение за измениями в ук�
 }
 
 // private tasks
-let build = gulp.series(clean, fonts_otf, gulp.parallel(html, css, js, images, php, favicon), fonts);
+let build = gulp.series(clean, fonts_otf, gulp.parallel(html, css, js, images, php, favicon, pug), fonts);
 let watch = gulp.parallel(build, watchFiles, browserSync); // комбинируем задания, которые нужно выполнять параллельно
 
 // чтобы зарегестрировать задания, их нужно экспортировать
 exports.html = html;
+exports.pug = pug;
 exports.css = css;
 exports.js = js;
 exports.php = php;

@@ -18,6 +18,7 @@
 		"gulp-media-queries-splitter": "latest",
 		"gulp-newer": "latest",
 		"gulp-plumber": "latest",
+		"gulp-pug-linter": "^1.5.0",
 		"gulp-rename": "latest",
 		"gulp-replace": "latest",
 		"gulp-responsive": "latest",
@@ -25,11 +26,14 @@
 		"gulp-ttf2woff": "latest",
 		"gulp-ttf2woff2": "latest",
 		"gulp-uglify-es": "latest",
+		"gulp-version-number": "^0.2.4",
 		"gulp-webp-html": "^1.0.2",
 		"imagemin-webp": "latest",
 		"transform-runtime": "0.0.0",
-		"webp-converter": "^2.2.3",
-		"gulp-version-number": "^0.2.4"
+		"webp-converter": "^2.2.3"
 	},
-	"dependencies": {}
+	"dependencies": {
+		"gulp-pug": "^4.0.1",
+		"gulp-shorthand": "^1.1.0"
+	}
 }
