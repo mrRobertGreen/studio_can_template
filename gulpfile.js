@@ -1,33 +1,35 @@
-let {
+const {
 	src,
 	dest
 } = require("gulp"); // пара основных функций из gulp
-let fs = require('fs'); // плагин для работы с файловой системой
-let gulp = require("gulp"); // сам gulp
-let browsersync = require("browser-sync").create(); // плагин для синхронизации браузера с изменениями в коде
-let autoprefixer = require("gulp-autoprefixer"); // плагин для добавления префиксов для стилей css
-let scss = require("gulp-sass"); // плагин для перевода scss/sass в css, понятный браузеру
-let group_media = require("gulp-group-css-media-queries"); // плагин для перемещения медиа-запросов в конец css файла
-let plumber = require("gulp-plumber"); // "сантехник" - плагин для вывода синтаксических ошибок в консоли без прерывания работы gulp
-let del = require("del"); // плагин для удаления/очищение файлов/папок
-let imagemin = require("gulp-imagemin"); // плагин для сжатия изображений
-let uglify = require("gulp-uglify-es").default; // плагин для минификации js файла 
-let rename = require("gulp-rename"); // плагин переименования файлов
-let fileinclude = require("gulp-file-include"); // плагин для импорта кода в html (конструкции типа @@include('file.html'))
-let clean_css = require("gulp-clean-css"); // плагин для минификации css файла
-let shorthand = require("gulp-shorthand"); // плагин для упрощения стилей css
-let newer = require('gulp-newer'); // плагин для запуска задач только для тех файлов, которые изменились
-let webp = require('imagemin-webp'); // плагин для конфертации картинок в webp формат
-let webphtml = require('gulp-webp-html'); // плагин для интеграции webp в html
-let version = require('gulp-version-number'); // плагин для добавления номера версии к файлам css/js
-let fonter = require('gulp-fonter'); // плагин для конвертации шрифтов
-let pug2html = require('gulp-pug'); // плагин для компиляции pug
-let ttf2woff = require('gulp-ttf2woff'); // плагин для конвертации ttf шрифтов в woff
-let ttf2woff2 = require('gulp-ttf2woff2'); // плагин для конвертации ttf шрифтов в woff2
-let project_name = "build"; // папка с конечными файлами проекта (build)
-let src_folder = "src"; // папка с исходниками
+const fs = require('fs'); // плагин для работы с файловой системой
+const gulp = require("gulp"); // сам gulp
+const browsersync = require("browser-sync").create(); // плагин для синхронизации браузера с изменениями в коде
+const autoprefixer = require("gulp-autoprefixer"); // плагин для добавления префиксов для стилей css
+const scss = require("gulp-sass"); // плагин для перевода scss/sass в css, понятный браузеру
+const group_media = require("gulp-group-css-media-queries"); // плагин для перемещения медиа-запросов в конец css файла
+const plumber = require("gulp-plumber"); // "сантехник" - плагин для вывода синтаксических ошибок в консоли без прерывания работы gulp
+const del = require("del"); // плагин для удаления/очищение файлов/папок
+const imagemin = require("gulp-imagemin"); // плагин для сжатия изображений
+const pngquant = require('imagemin-pngquant'); // сжатие .png
+const mozjpeg = require('imagemin-mozjpeg'); // сжатие .jpeg
+const uglify = require("gulp-uglify-es").default; // плагин для минификации js файла 
+const rename = require("gulp-rename"); // плагин переименования файлов
+const fileinclude = require("gulp-file-include"); // плагин для импорта кода в html (конструкции типа @@include('file.html'))
+const clean_css = require("gulp-clean-css"); // плагин для минификации css файла
+const shorthand = require("gulp-shorthand"); // плагин для упрощения стилей css
+const newer = require('gulp-newer'); // плагин для запуска задач только для тех файлов, которые изменились
+const webp = require('imagemin-webp'); // плагин для конфертации картинок в webp формат
+const webphtml = require('gulp-webp-html'); // плагин для интеграции webp в html
+const version = require('gulp-version-number'); // плагин для добавления номера версии к файлам css/js
+const fonter = require('gulp-fonter'); // плагин для конвертации шрифтов
+const pug2html = require('gulp-pug'); // плагин для компиляции pug
+const ttf2woff = require('gulp-ttf2woff'); // плагин для конвертации ttf шрифтов в woff
+const ttf2woff2 = require('gulp-ttf2woff2'); // плагин для конвертации ttf шрифтов в woff2
+const project_name = "build"; // папка с конечными файлами проекта (build)
+const src_folder = "src"; // папка с исходниками
 
-let path = {
+const path = {
 	// устанавливаем переменную с путями
 	build: { // пути к собранным файлам 
 		html: project_name + "/",
@@ -175,6 +177,10 @@ function images() {
 		.pipe(dest(path.build.images))
 		.pipe(src(path.src.images))
 		.pipe(newer(path.build.images))
+		.pipe(imagemin([
+			pngquant({quality: [0.5, 0.5]}),
+			mozjpeg({quality: 50})
+		  ]))
 		.pipe(
 			imagemin({ // сжатие изображений
 				progressive: true,
@@ -274,8 +280,8 @@ function watchFiles() { // наблюдение за измениями в ук�
 }
 
 // private tasks
-let build = gulp.series(clean, fonts_otf, gulp.parallel(html, css, js, images, php, favicon, pug), fonts);
-let watch = gulp.parallel(build, watchFiles, browserSync); // комбинируем задания, которые нужно выполнять параллельно
+const build = gulp.series(clean, fonts_otf, gulp.parallel(html, css, js, images, php, favicon, pug), fonts);
+const watch = gulp.parallel(build, watchFiles, browserSync); // комбинируем задания, которые нужно выполнять параллельно
 
 // чтобы зарегестрировать задания, их нужно экспортировать
 exports.html = html;
